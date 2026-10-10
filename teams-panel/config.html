@@ -15,15 +15,15 @@
 </head>
 <body>
   <h1>添加「任务面板（试用）」标签页</h1>
-  <p>无需任何设置，直接点「保存」即可。<br>该标签页是纯前端演示页，不连接后端。</p>
+  <p>无需任何设置，直接点「保存」即可。<br>该标签页是纯前端可点原型（全是假数据），不连接后端。</p>
   <p id="status" style="font-size:12px"></p>
 <script>
   (function () {
     var status = document.getElementById('status');
     if (!(window.microsoftTeams && microsoftTeams.app)) { status.textContent = '未检测到 Teams SDK'; return; }
-    // index.html 与 config.html 同目录，用当前地址推出内容页地址，换主机不用改代码
+    // prototype.html 与 config.html 同目录，用当前地址推出内容页地址，换主机不用改代码
     var base = window.location.href.replace(/[^\/?#]*([?#].*)?$/, '');
-    var contentUrl = base + 'index.html';
+    var contentUrl = base + 'prototype.html';
     microsoftTeams.app.initialize().then(function () {
       microsoftTeams.pages.config.registerOnSaveHandler(function (saveEvent) {
         microsoftTeams.pages.config.setConfig({

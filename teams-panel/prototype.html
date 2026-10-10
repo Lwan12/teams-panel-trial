@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Teams 任务面板 · 静态原型（A/B）</title>
+<style>
+:root{
+  --g0:#FFFFFF;--g1:#FAFAFA;--g2:#F5F5F5;--g3:#F0F0F0;--g4:#E6E6E6;--g5:#D1D1D1;--g6:#A0A0A0;--g7:#616161;--g8:#424242;--g9:#242424;
+  --p0:#EBF3FC;--p1:#CFE4FA;--p2:#B4D6FA;--p5:#0F6CBD;--p6:#115EA3;--p7:#0F548C;
+  --ok0:#F1FAF1;--ok1:#9FD89F;--ok3:#0E700E;
+  --wa0:#FFF8EB;--wa1:#F7D79B;--wa2:#BC6F00;--wa3:#8A5300;
+  --er0:#FDF3F4;--er1:#EEACB2;--er2:#C50F1F;--er3:#A4262C;
+  --teams:#5B5FC7;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-size:14px;line-height:1.55;color:var(--g9);background:var(--g3);display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--g9)}
+.mono{font-family:var(--mono)}
+/* prototype bar */
+.pbar{height:32px;flex:none;background:#2B2B2B;color:#D6D6D6;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:12px}
+.pbar b{color:#fff;font-weight:600;margin-right:8px}
+.pbar .seg{display:flex;border:1px solid #555;border-radius:4px;overflow:hidden}
+.pbar .seg button{background:transparent;border:0;color:#D6D6D6;padding:2px 10px;font-size:12px}
+.pbar .seg button.on{background:#E6E6E6;color:#242424;font-weight:600}
+.pbar .sp{flex:1}
+/* teams shell */
+.tbar{height:44px;flex:none;background:#EBEBEB;display:flex;align-items:center;padding:0 12px;gap:12px}
+.tbar .nav{color:var(--g7);font-size:16px;width:64px}
+.tbar .search{flex:0 1 520px;margin:0 auto;height:30px;background:#fff;border-radius:4px;display:flex;align-items:center;padding:0 10px;color:var(--g6);font-size:13px}
+.tbar .me{width:30px;height:30px;border-radius:50%;background:#C7D7EC;color:#0C3B5E;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.shell{flex:1;display:flex;min-height:0}
+.rail{width:64px;flex:none;background:#EBEBEB;display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.rail .it{width:64px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--g7);position:relative;gap:2px}
+.rail .it svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5}
+.rail .it.on{color:var(--teams);font-weight:600}
+.rail .it.on::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 2px 2px 0;background:var(--teams)}
+.stage{flex:1;display:flex;min-width:0;background:#fff;border-top-left-radius:8px;overflow:hidden}
+/* teams chat list (tab entry) */
+.clist{width:280px;flex:none;background:var(--g1);display:flex;flex-direction:column}
+.clist h2{font-size:16px;font-weight:600;margin:0;padding:14px 16px 10px}
+.clist .c{display:flex;gap:10px;padding:8px 16px;align-items:center}
+.clist .c.on{background:#fff}
+.clist .c .av{width:32px;height:32px;border-radius:50%;background:var(--g4);color:var(--g8);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+.clist .c .n{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clist .c .s{font-size:12px;color:var(--g7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clist .c>div{min-width:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.chead{height:48px;flex:none;display:flex;align-items:flex-end;gap:20px;padding:0 20px;background:#fff;border-bottom:1px solid var(--g4)}
+.chead .gname{font-size:16px;font-weight:600;align-self:center;margin-right:8px}
+.chead .tab{padding:0 2px 11px;font-size:14px;color:var(--g7);position:relative}
+.chead .tab.on{color:var(--g9);font-weight:600}
+.chead .tab.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--teams)}
+.ahead{height:48px;flex:none;display:flex;align-items:flex-end;gap:20px;padding:0 20px;background:#fff;border-bottom:1px solid var(--g4)}
+.ahead .appname{font-size:16px;font-weight:600;align-self:center;display:flex;align-items:center;gap:8px;margin-right:8px}
+.ahead .appname i{width:24px;height:24px;border-radius:4px;background:var(--p5);color:#fff;font-style:normal;font-size:12px;display:flex;align-items:center;justify-content:center}
+.body{flex:1;display:flex;min-height:0}
+/* list pane */
+.list{width:340px;flex:none;background:var(--g1);display:flex;flex-direction:column;min-height:0}
+.list.narrow{width:300px}
+.list.right{width:300px;border-left:1px solid var(--g4)}
+.list.right.narrow{width:280px}
+.ltop{padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px}
+.ltop .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.newbtn{display:flex;align-items:center;gap:6px;justify-content:center;height:32px;border:1px solid var(--g5);background:#fff;border-radius:4px;font-weight:600;color:var(--g9);width:100%}
+.newbtn:hover{border-color:var(--g6)}
+.inp{height:30px;border:1px solid var(--g4);border-bottom-color:var(--g6);border-radius:4px;background:#fff;padding:0 8px;font-size:13px;width:100%}
+.sel{height:28px;border:1px solid var(--g4);border-radius:4px;background:#fff;padding:0 4px;font-size:12px;min-width:0;flex:1}
+.segm{display:flex;background:var(--g3);border-radius:4px;padding:2px;flex:none}
+.segm button{border:0;background:transparent;font-size:12px;padding:2px 10px;border-radius:3px;color:var(--g7)}
+.segm button.on{background:#fff;color:var(--g9);font-weight:600;box-shadow:0 0 0 1px var(--g4)}
+.chip-t{border:1px solid var(--g4);background:#fff;border-radius:4px;font-size:12px;padding:3px 8px;color:var(--g8);flex:none;white-space:nowrap}
+.chip-t.on{background:var(--wa0);border-color:var(--wa1);color:var(--wa3);font-weight:600}
+.lcount{font-size:12px;color:var(--g7);padding:0 12px 6px;display:flex;justify-content:space-between}
+.lcount button{border:0;background:none;color:var(--p5);font-size:12px;padding:0}
+.items{flex:1;overflow:auto;padding:0 8px 12px}
+.item{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:4px;padding:8px 10px 9px 12px;margin-bottom:2px;position:relative}
+.item:hover{background:var(--g3)}
+.item.on{background:var(--p0)}
+.item.on::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--p5)}
+.item .l1{display:flex;align-items:baseline;gap:6px;font-size:12px;color:var(--g7)}
+.item .l1 .id{font-size:13px;font-weight:600;color:var(--g9)}
+.item .l1 .t{margin-left:auto;flex:none}
+.item .l1 .gn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.item .l2{font-size:13px;line-height:1.45;margin:2px 0 4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item .l3{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--g7);min-width:0}
+.item .l3 .st{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.empty{padding:32px 16px;text-align:center;color:var(--g7);font-size:13px}
+.empty b{display:block;color:var(--g9);font-size:14px;margin-bottom:4px}
+.empty button{margin-top:8px}
+/* badges */
+.bd{display:inline-flex;align-items:center;gap:3px;font-size:12px;line-height:18px;padding:0 6px;border-radius:4px;font-weight:600;white-space:nowrap;flex:none}
+.bd.New,.bd.Non,.bd.Cancelled{background:var(--g3);color:var(--g8)}
+.bd.InProgress{background:var(--p0);color:var(--p7)}
+.bd.Done{background:var(--ok0);color:var(--ok3)}
+.bd.Failed{background:var(--er0);color:var(--er3)}
+.bd.wait{background:var(--wa0);color:var(--wa3)}
+.bd.c-pass{background:var(--ok0);color:var(--ok3)}
+.bd.c-diff{background:var(--wa0);color:var(--wa3)}
+.bd.c-none{background:var(--g3);color:var(--g8)}
+.bd.c-first{background:#EEF1F5;color:#3B4A5C}
+/* detail */
+.detail{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff}
+.dhead{padding:14px 24px 12px;flex:none}
+.dhead .back{border:0;background:none;color:var(--p5);padding:0;font-size:13px;margin-bottom:6px}
+.dhead .r1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dhead h1{white-space:nowrap}
+.dhead h1{font-size:20px;line-height:1.2;margin:0;font-weight:600}
+.dhead .acts{margin-left:auto;display:flex;gap:4px}
+.dhead .meta{font-size:12px;color:var(--g7);margin-top:4px}
+.dhead .meta b{color:var(--g8);font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13px;margin-top:10px;background:var(--g2);border-radius:4px;padding:8px 12px}
+.kv dt{color:var(--g8);font-weight:600;white-space:nowrap}
+.kv dd{margin:0;color:var(--g9)}
+.tbtn{border:0;background:none;color:var(--g8);font-size:13px;padding:4px 8px;border-radius:4px}
+.tbtn:hover{background:var(--g3)}
+.btn{height:32px;padding:0 14px;border-radius:4px;border:1px solid var(--g5);background:#fff;font-weight:600;font-size:13px;color:var(--g9)}
+.btn.pri{background:var(--p5);border-color:var(--p5);color:#fff}
+.btn.pri:hover{background:var(--p6)}
+.btn:disabled,.btn.pri:disabled,.btn.pri:disabled:hover{background:var(--g3);border-color:var(--g4);color:var(--g6);cursor:not-allowed}
+.btn.danger{background:var(--er2);border-color:var(--er2);color:#fff}
+.tl{flex:1;overflow:auto;padding:4px 24px 16px}
+.msg{display:flex;gap:10px;padding:8px 0;max-width:700px}
+.av{width:32px;height:32px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:#C7D7EC;color:#0C3B5E}
+.av.bot{border-radius:4px;background:var(--g8);color:#fff}
+.av.c1{background:#E3D9C6;color:#5C4320}.av.c2{background:#D5E5D5;color:#2E4B2E}.av.c3{background:#E6D3DA;color:#5E2E40}
+.mb{min-width:0;flex:1}
+.mh{display:flex;align-items:baseline;gap:8px;font-size:12px;color:var(--g7)}
+.mh b{font-size:13px;color:var(--g9);font-weight:600}
+.mh .k{color:var(--g7)}
+.mt{font-size:14px;max-width:640px;margin-top:1px;word-break:break-word}
+.sysl{font-size:12px;color:var(--g7);padding:4px 0 4px 42px;display:flex;gap:8px;align-items:baseline}
+.sysl.hl{color:var(--p7);font-weight:600}
+.sysl .t{color:var(--g6);font-weight:400}
+.card{margin-top:6px;border-radius:6px;background:var(--g2);padding:12px 14px;max-width:600px;position:relative}
+.card.q{border-left:3px solid var(--wa2)}
+.card.q.done{border-left-color:var(--ok1)}
+.card.res{border-left:3px solid var(--g5);background:var(--g2)}
+.card.fail{border-left:3px solid var(--er1)}
+.card .ch{flex-wrap:wrap;display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:600;margin-bottom:8px}
+.card .ch .sub{font-weight:400;color:var(--g7);font-size:12px}
+.qi{margin-bottom:10px}
+.qi .qt{font-size:13px;font-weight:600;margin-bottom:4px}
+.opt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--g4);background:#fff;border-radius:4px;padding:5px 10px;margin-bottom:4px;font-size:13px;color:var(--g9)}
+.opt .dot{width:14px;height:14px;border-radius:50%;border:1px solid var(--g6);flex:none;display:flex;align-items:center;justify-content:center}
+.opt .ltr{font-weight:600;color:var(--g8);width:14px}
+.opt.on{border-color:var(--p5);background:var(--p0)}
+.opt.on .dot{border-color:var(--p5)}
+.opt.on .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--p5)}
+.opt:disabled{cursor:default}
+.opt.on:disabled{background:#fff;border-color:var(--g4)}
+.qf{display:flex;align-items:center;gap:12px;margin-top:4px;font-size:12px;color:var(--g7)}
+.rk{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px;margin:8px 0}
+.rk dt{color:var(--g8);font-weight:600;white-space:nowrap}
+.rk dd.mono{word-break:break-all}
+.rk dd{margin:0}
+.warn{background:var(--wa0);color:var(--wa3);font-size:12px;padding:6px 10px;border-radius:4px;margin-top:8px}
+.warn b{font-weight:600}
+.fold{text-align:left;border:0;background:none;color:var(--g8);font-size:12px;padding:4px 0 4px 42px}
+.fold:hover{color:var(--p5)}
+.rel{margin-left:42px;background:var(--g1);border-radius:4px;padding:4px 12px}
+.rel .msg{padding:6px 0}
+.tag{font-size:11px;color:var(--g7);background:var(--g3);border-radius:3px;padding:0 5px;line-height:16px}
+/* composer */
+.comp{flex:none;padding:6px 24px 12px;background:#fff}
+.comp .box{border:1px solid var(--g5);border-radius:6px;background:#fff;padding:8px 10px}
+.comp .box:focus-within{border-color:var(--p5);box-shadow:0 1px 0 0 var(--p5)}
+.comp .to{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--g7);margin-bottom:6px;flex-wrap:wrap}
+.comp .to b{color:var(--g8);font-weight:600}
+.comp .to select{height:24px;font-size:12px;border:1px solid var(--g4);border-radius:4px;background:#fff}
+.comp .to .lock{background:var(--g3);border-radius:4px;padding:1px 6px;color:var(--g8);font-weight:600}
+.comp textarea{width:100%;border:0;resize:none;outline:none;font-size:14px;line-height:1.5;height:40px;padding:0}
+.comp .cf{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rrow{display:flex;gap:8px;align-items:flex-end}
+.rrow textarea{flex:1;height:32px!important}
+.comp .cf .chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.comp .cf{flex-wrap:nowrap!important}
+.wb-mid .hint,.wb-narrow .hint,.narrowA .hint{display:none}
+.body{position:relative}
+.list.mid{width:240px}
+.list.full{width:100%;flex:1}
+.wb-narrow .tl,.wb-narrow .dhead,.wb-narrow .comp,.wb-narrow .shead{padding-left:16px;padding-right:16px}
+.tlwrap{flex:1;position:relative;min-height:0;display:flex;flex-direction:column}
+.jump{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);border:1px solid var(--wa1);background:var(--wa0);color:var(--wa3);font-size:12px;font-weight:600;border-radius:4px;padding:4px 12px;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;display:none}
+.jump.show{display:block}
+.qbg{font-size:12px;color:var(--g8);background:#fff;border-radius:4px;padding:6px 10px;margin-bottom:10px}
+.warnin{color:var(--wa3);font-weight:600}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:300px;background:var(--g1);box-shadow:-4px 0 16px rgba(0,0,0,.14);display:flex;flex-direction:column;z-index:5}
+.drawer.full{width:100%;box-shadow:none}
+.drawer .dh{display:flex;align-items:center;padding:10px 12px 0;font-size:13px;font-weight:600}
+.drawer .dh button{margin-left:auto}
+.shead{flex-wrap:wrap}
+.shead .lb{margin-left:auto;flex:none}
+.gsel{height:26px;font-size:13px;border:1px solid var(--g4);border-radius:4px;background:#fff;font-weight:600}
+.ub{font-size:11px;color:var(--g7);background:var(--g3);border-radius:3px;padding:0 4px;margin-left:auto;font-weight:400}
+.comp .cf .hint{white-space:nowrap;font-size:12px;color:var(--g7);margin-left:auto;margin-right:8px}
+.qc{border:1px solid var(--g4);background:var(--g1);border-radius:4px;font-size:12px;padding:2px 8px;color:var(--g8)}
+.qc:hover{border-color:var(--g6);background:#fff}
+.err{color:var(--er3);font-size:12px;font-weight:600}
+/* new compose page */
+.newpage{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 24px 8px}
+.newpage .intro{max-width:560px;margin:0 auto auto;padding-top:48px}
+.newpage h2{font-size:16px;margin:0 0 6px;font-weight:600}
+.newpage p{margin:0 0 4px;color:var(--g8);font-size:13px}
+.newpage ul{margin:6px 0 0;padding-left:18px;color:var(--g8);font-size:13px}
+/* B stream */
+.groups{width:200px;flex:none;background:var(--g1);padding:12px 8px;border-right:1px solid var(--g4);overflow:auto}
+.groups h3{font-size:12px;color:var(--g7);font-weight:600;margin:0 8px 6px}
+.gi{display:flex;width:100%;border:0;background:transparent;border-radius:4px;padding:6px 10px;font-size:13px;text-align:left;align-items:center;gap:6px;position:relative;color:var(--g9)}
+.gi:hover{background:var(--g3)}
+.gi.on{background:var(--p0);font-weight:600}
+.gi.on::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3px;border-radius:2px;background:var(--p5)}
+.gi .n{margin-left:auto;font-size:11px;font-weight:600;background:var(--wa0);color:var(--wa3);border-radius:4px;padding:0 5px}
+.stream{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff}
+.shead{padding:12px 24px 8px;flex:none;display:flex;align-items:baseline;gap:10px}
+.shead h1{font-size:16px;margin:0;font-weight:600}
+.shead span{font-size:12px;color:var(--g7)}
+.glabel{font-size:11px;color:var(--g7);padding:10px 0 0 42px}
+.tchip{display:flex;align-items:center;gap:8px;margin-top:6px;max-width:520px;border-radius:4px;background:var(--g2);padding:6px 10px;border:0;border-left:3px solid var(--p5);text-align:left;width:100%;font-size:13px;color:var(--g9)}
+.tchip:hover{background:var(--g3)}
+.tchip .id{font-weight:600;flex:none}
+.tchip .x{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;color:var(--g8)}
+.tchip .go{color:var(--p5);font-size:12px;flex:none}
+.flash{animation:fl 1.6s ease-out}
+@keyframes fl{0%{background:var(--p1)}100%{background:inherit}}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;z-index:9}
+.modal{background:#fff;border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.22);width:400px;padding:20px 24px}
+.modal h3{margin:0 0 8px;font-size:16px}
+.modal p{margin:0 0 16px;font-size:13px;color:var(--g8)}
+.modal .f{display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--g9);color:#fff;font-size:13px;padding:8px 14px;border-radius:4px;z-index:10}
+</style>
+</head>
+<body>
+<div id="app" style="display:contents"></div>
+<script>
+const GROUPS=[{id:'g1',name:'AE比对测试群',bound:1},{id:'g2',name:'CM编程群',bound:1},{id:'g3',name:'项目B交付群',bound:0},{id:'dm',name:'私聊（我和幕僚长任务）',dm:1}];
+const TAB_GROUP='g1';
+const QUICK=['用R比对AE','只生成AE程序','重新生成AE','比对 AE 和 CM'];
+const BOT='幕僚长任务';
+const AVC={'我':'','同事A':'c1','同事B':'c2','同事C':'c3'};
+function gname(id){return (GROUPS.find(g=>g.id===id)||{}).name||''}
+let NEXT=45;
+const TASKS=[
+ {id:42,g:'g2',by:'同事B',date:'10-10',time:'12:40',status:'New',stage:'等待受理',summary:'刚记录，还没受理',raw:'只生成AE程序，先不跑比对。',canSwap:1,
+  tl:[{k:'me',who:'同事B',time:'12:40',text:'只生成AE程序，先不跑比对。',grp:1},{k:'logged',time:'12:40',text:'已记录 TASK-42',grp:1}]},
+ {id:41,g:'g1',by:'我',date:'10-10',time:'13:02',status:'InProgress',stage:'等待回答：第 1 轮，2 个问题',summary:'已受理，等你选 Spec 版本和缺日处理方式',raw:'用R比对AE。这次 Spec 用最新那版，比对完结果放 Validation 下面。',wait:1,
+  q:{round:1,bg:'背景：用的是本群项目 DEMO-001 的 raw_20261009.7z；Spec 目录下有 v1.3（10-08 草稿）和 v1.2（09-28 定稿）两版。',items:[{t:'找到两个 Spec，用哪个？',o:[['A','v1.3（10-08，草稿）'],['B','v1.2（09-28，已定稿）']]},{t:'AE 开始日期只有年月时，怎么比？',o:[['A','原样比对，不补日'],['B','按 SAP 补到当月 1 日']]}]},
+  tl:[{k:'me',who:'我',time:'13:02',text:'用R比对AE。这次 Spec 用最新那版，比对完结果放 Validation 下面。',grp:1},
+      {k:'logged',time:'13:02',text:'已记录 TASK-41（来自任务面板）',grp:1},
+      {k:'ack',time:'13:03',text:'已受理。用的是本群绑定项目 DEMO-001 的 raw_20261009.7z，Spec 目录下找到两个版本，需要你定。开跑前可以换文件。',grp:1},
+      {k:'stage',time:'13:03',text:'阶段：准备输入文件'},
+      {k:'q',time:'13:04',grp:1}]},
+ {id:40,g:'g1',by:'同事A',date:'10-10',time:'09:15',status:'Done',stage:'已完成',summary:'比对完成：有差异 3 处',
+  raw:'比对 AE 和 CM：看合并用药的开始日期是不是落在 AE 期间，重点查 SAE 的受试者，差异列出受试者号和访视，结果放 Validation，顺便说一下用的是哪版数据，和上周那次比有没有新增差异。',
+  res:{c:'有差异',cls:'c-diff',d:'3 处 CM 开始日期与 AE 期间不一致（S-0012、S-0031、S-0047）；比上周新增 1 处。',path:'Validation/AE_CM_compare_20261010.xlsx',hash:'17 项 SHA-256 已核验'},
+  tl:[{k:'me',who:'同事A',time:'09:15',text:'比对 AE 和 CM：看合并用药的开始日期是不是落在 AE 期间，重点查 SAE 的受试者，差异列出受试者号和访视，结果放 Validation，顺便说一下用的是哪版数据，和上周那次比有没有新增差异。',grp:1},
+      {k:'logged',time:'09:15',text:'已记录 TASK-40',grp:1},
+      {k:'ack',time:'09:16',text:'已受理。用的是 DEMO-001 的 raw_20261009.7z、Spec v1.2。',grp:1},
+      {k:'stage',time:'09:16',text:'阶段：比对 AE 和 CM'},
+      {k:'res',time:'09:41',grp:1}],
+  rel:[{id:'TASK-44',kind:'追问',who:'我',time:'10:02',text:'第 2 处差异是哪个访视？'},{kind:'回复',who:BOT,time:'10:03',text:'S-0031 第 3 次访视（V3），CM 开始日期比 AE 开始早 2 天。'}]},
+ {id:38,g:'g2',by:'我',date:'10-09',time:'17:05',status:'Failed',stage:'异常：输入缺文件',summary:'7z 里没有 ae.sas7bdat，没有开跑',raw:'重新生成AE，用昨天新传的那包数据。',
+  fail:{why:'raw_20261009.7z 里找不到 ae.sas7bdat，没有开跑。',next:'补传数据包后，在本串追问「已补传，重跑」。'},
+  tl:[{k:'me',who:'我',time:'17:05',text:'重新生成AE，用昨天新传的那包数据。',grp:1},{k:'logged',time:'17:05',text:'已记录 TASK-38（来自任务面板）',grp:1},
+      {k:'ack',time:'17:06',text:'已受理。用的是项目 DEMO-002 的 raw_20261009.7z。',grp:1},{k:'fail',time:'17:07',grp:1}],
+  rel:[{id:'TASK-39',kind:'追问',who:'同事C',time:'17:20',text:'是 /raw/1009 那个包吗？'},{kind:'回复',who:BOT,time:'17:20',text:'是，raw_20261009.7z，里面只有 dm、cm、ex 三个数据集。'}]},
+ {id:37,g:'g1',by:'同事A',date:'10-09',time:'16:30',status:'Non',stage:'—',summary:'闲聊，没有建任务',raw:'你好',
+  tl:[{k:'me',who:'同事A',time:'16:30',text:'你好',grp:1},{k:'ack',time:'16:30',text:'你好。要派活直接说要做什么，比如「用R比对AE」。',grp:1}]},
+ {id:36,g:'dm',by:'我',date:'10-09',time:'11:20',status:'Done',stage:'已完成',summary:'只做了首建，未比对',raw:'只生成AE程序',
+  res:{c:'只做了首建',cls:'c-first',d:'生成了 AE 首版程序，没有跑比对。',path:'Validation/AE_program_v1.R',hash:'3 项 SHA-256 已核验'},
+  tl:[{k:'me',who:'我',time:'11:20',text:'只生成AE程序',grp:1},{k:'logged',time:'11:20',text:'已记录 TASK-36',grp:1},{k:'res',time:'11:34',grp:1}]},
+ {id:35,g:'g1',by:'我',date:'10-08',time:'15:10',status:'Done',stage:'已完成',summary:'比对通过，0 处差异',raw:'用R比对AE',
+  res:{c:'通过',cls:'c-pass',d:'双程序结果一致，0 处差异。',path:'Validation/AE_compare_20261008.xlsx',hash:'17 项 SHA-256 已核验'},
+  tl:[{k:'me',who:'我',time:'15:10',text:'用R比对AE',grp:1},{k:'logged',time:'15:10',text:'已记录 TASK-35',grp:1},{k:'ack',time:'15:11',text:'已受理。用的是 DEMO-001 的 raw_20261008.7z、Spec v1.2。',grp:1},{k:'res',time:'15:30',grp:1}]},
+ {id:34,g:'g2',by:'同事B',date:'10-08',time:'10:00',status:'Done',stage:'已完成',summary:'CM 为空，未比对',raw:'比对 AE 和 CM',
+  res:{c:'未比对',cls:'c-none',d:'CM 数据集为空，按规则跳过比对。',path:'Validation/AE_CM_compare_20261008.log',hash:'2 项 SHA-256 已核验'},
+  tl:[{k:'me',who:'同事B',time:'10:00',text:'比对 AE 和 CM',grp:1},{k:'logged',time:'10:00',text:'已记录 TASK-34',grp:1},{k:'res',time:'10:12',grp:1}]},
+];
+const ST={New:['○','新建'],InProgress:['◐','进行中'],Done:['✓','完成'],Failed:['✕','失败'],Cancelled:['⊘','已取消'],Non:['—','非任务']};
+function bound(g){const x=GROUPS.find(y=>y.id===g);return !x||x.dm||x.bound}
+const S={gcol:true,wb:'wide',aPane:'thread',bList:false,scrollTop0:false,v:'A',e:'side',sel:41,bThread:null,compose:false,f:{g:'all',who:'all',st:'all',date:'all',wait:false,non:false,q:''},bGroup:'all',picks:{},answered:{},draft:'',draftG:'',err:'',modal:null,toast:'',openRel:{},flash:null};
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function sum80(s){return s.length>80?s.slice(0,80)+'…':s}
+function badge(st){const [s,l]=ST[st];return `<span class="bd ${st}">${s} ${l}</span>`}
+function waitB(t){return t.wait?`<span class="bd wait">? 待回答</span>`:''}
+function avatar(who){if(who===BOT)return `<div class="av bot">幕</div>`;return `<div class="av ${AVC[who]||''}">${who==='我'?'我':who.slice(-1)}</div>`}
+function T(id){return TASKS.find(t=>t.id===id)}
+function isTab(){return S.e==='tab'}
+function scoped(){
+  let a=TASKS.slice();
+  if(isTab())a=a.filter(t=>t.g===TAB_GROUP);
+  return a;
+}
+function filtered(){
+  const f=S.f;let a=scoped();
+  if(!f.non)a=a.filter(t=>t.status!=='Non');
+  if(!isTab()&&S.v==='A'&&f.g!=='all')a=a.filter(t=>t.g===f.g);
+  if(S.v==='B'&&!isTab()&&S.bGroup!=='all')a=a.filter(t=>t.g===S.bGroup);
+  if(f.who==='me')a=a.filter(t=>t.by==='我');
+  if(f.st!=='all'){if(f.st==='open')a=a.filter(t=>t.status==='New'||t.status==='InProgress');else a=a.filter(t=>t.status===f.st)}
+  if(f.date==='today')a=a.filter(t=>t.date==='10-10');
+  if(f.date==='7')a=a.filter(t=>t.date>='10-04');
+  if(f.wait)a=a.filter(t=>t.wait);
+  if(f.q){const q=f.q.trim().toLowerCase().replace(/^task-?/,'');a=a.filter(t=>String(t.id).includes(q)||t.raw.toLowerCase().includes(f.q.trim().toLowerCase()))}
+  return a;
+}
+function filtersActive(){const f=S.f;return f.g!=='all'||f.who!=='all'||f.st!=='all'||f.date!=='all'||f.wait||f.non||f.q}
+
+/* ---------- shell ---------- */
+const ICON={act:'<path d="M4 17h12M6 17V9a4 4 0 018 0v8M9 19h2"/>',chat:'<path d="M3 5h14v9H8l-4 3v-3H3z"/>',team:'<circle cx="7" cy="7" r="3"/><circle cx="14" cy="8" r="2.2"/><path d="M2 17c0-3 2.5-5 5-5s5 2 5 5M12 16c0-2 1.2-3.5 3-3.5s3 1.5 3 3.5"/>',cal:'<rect x="3" y="4" width="14" height="13" rx="1"/><path d="M3 8h14M7 2v4M13 2v4"/>',task:'<rect x="3" y="3" width="14" height="14" rx="1"/><path d="M6 8l2 2 4-4M6 14h8"/>',apps:'<rect x="3" y="3" width="6" height="6"/><rect x="11" y="3" width="6" height="6"/><rect x="3" y="11" width="6" height="6"/><rect x="11" y="11" width="6" height="6"/>'};
+function rail(){
+  const items=[['act','活动'],['chat','聊天'],['team','团队'],['cal','日历'],['task','任务面板'],['apps','应用']];
+  const on=isTab()?'chat':'task';
+  return `<nav class="rail">${items.map(([k,l])=>`<div class="it ${k===on?'on':''}"><svg viewBox="0 0 20 20">${ICON[k]}</svg>${l}</div>`).join('')}</nav>`;
+}
+function render(){
+  const app=document.getElementById('app');
+  const old=document.querySelector('.tl');const oldTop=old?old.scrollTop:0;
+  app.innerHTML=`
+  <div class="pbar"><b>原型</b>
+    <div class="seg"><button data-act="v" data-x="A" class="${S.v==='A'?'on':''}">A 讨论串版</button><button data-act="v" data-x="B" class="${S.v==='B'?'on':''}">B 群动态版</button></div>
+    <span style="margin:0 4px 0 10px">入口</span>
+    <div class="seg"><button data-act="e" data-x="side" class="${S.e==='side'?'on':''}">左边栏</button><button data-act="e" data-x="tab" class="${S.e==='tab'?'on':''}">群聊标签</button></div>
+    <span class="sp"></span><span>示例数据 · 非真实人名 · 不连后台</span></div>
+  <div class="tbar"><span class="nav">‹ ›</span><div class="search">搜索</div><div class="me">我</div></div>
+  <div class="shell">${rail()}<div class="stage">${isTab()?chatList():''}<div class="main">${isTab()?chatHead():appHead()}<div class="body wb-${S.wb}">${S.v==='A'?viewA():viewB()}</div></div></div></div>
+  ${S.modal?modal():''}${S.toast?`<div class="toast">${esc(S.toast)}</div>`:''}`;
+  const body=document.querySelector('.body');if(body){const w=body.clientWidth;const wb=w>=900?'wide':w>=620?'mid':'narrow';const gc=w>=1100;if(wb!==S.wb||gc!==S.gcol){S.wb=wb;S.gcol=gc;render();return}}
+  const tl=document.querySelector('.tl');if(tl){if(S.scrollEnd){tl.scrollTop=tl.scrollHeight;S.scrollEnd=false;S.scrollTop0=false}else if(S.scrollTop0){tl.scrollTop=0;S.scrollTop0=false}else tl.scrollTop=oldTop;tl.addEventListener('scroll',updPill);updPill()}
+  const ta=document.querySelector('textarea');if(ta&&S.focus){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);S.focus=false}
+}
+function updPill(){const tl=document.querySelector('.tl');const pill=document.querySelector('.jump');if(!tl||!pill)return;const c=tl.querySelector('.card.q:not(.done)');if(!c){pill.classList.remove('show');return}const cr=c.getBoundingClientRect(),tr=tl.getBoundingClientRect();pill.classList.toggle('show',cr.bottom>tr.bottom+4)}
+window.addEventListener('resize',()=>render());
+function chatList(){
+  const cs=[['AE比对测试群','同事A：结果收到了，我下午看','A'],['CM编程群','任务面板：已记录 TASK-42','C'],['项目B交付群','我：好的','B'],['同事A','明天上午对一下口径','A'],['同事B','收到','B']];
+  return `<aside class="clist"><h2>聊天</h2>${cs.map((c,i)=>`<div class="c ${i===0?'on':''}"><div class="av">${c[2]}</div><div><div class="n">${c[0]}</div><div class="s">${c[1]}</div></div></div>`).join('')}</aside>`;
+}
+function chatHead(){return `<div class="chead"><span class="gname">AE比对测试群</span><span class="tab">聊天</span><span class="tab">已共享</span><span class="tab on">任务面板</span><span class="tab">＋</span></div>`}
+function appHead(){return `<div class="ahead"><span class="appname"><i>任</i>任务面板</span></div>`}
+
+/* ---------- list ---------- */
+function filterBar(right){
+  const f=S.f;const showG=!isTab()&&S.v==='A';
+  return `<div class="ltop">
+    ${isTab()?`<div style="font-size:12px;color:var(--g7)">本群 <b style="color:var(--g8)">${gname(TAB_GROUP)}</b> · 只看、只发本群</div>`:''}
+    ${S.v==='A'?`<button class="newbtn" data-act="new">＋ 新的一件事</button>`:''}
+    <input class="inp" placeholder="搜 TASK-n 或原话关键字" value="${esc(f.q)}" data-in="q">
+    <div class="row">
+      ${showG?`<select class="sel" data-ch="g" aria-label="群"><option value="all">全部群</option>${GROUPS.map(g=>`<option value="${g.id}" ${f.g===g.id?'selected':''}>${g.dm?'私聊':g.name}</option>`).join('')}</select>`:''}
+      <select class="sel" data-ch="st" aria-label="状态">${[['all','全部状态'],['open','未结束'],['New','新建'],['InProgress','进行中'],['Done','完成'],['Failed','失败'],['Cancelled','已取消']].map(([v,l])=>`<option value="${v}" ${f.st===v?'selected':''}>${l}</option>`).join('')}</select>
+      <select class="sel" data-ch="date" aria-label="日期">${[['all','全部日期'],['today','今天'],['7','近 7 天']].map(([v,l])=>`<option value="${v}" ${f.date===v?'selected':''}>${l}</option>`).join('')}</select>
+    </div>
+    <div class="row">
+      <div class="segm"><button data-act="who" data-x="all" class="${f.who==='all'?'on':''}">全部</button><button data-act="who" data-x="me" class="${f.who==='me'?'on':''}">我提交的</button></div>
+      <button class="chip-t ${f.wait?'on':''}" data-act="wait">? 只看待回答</button>
+      <label style="font-size:12px;color:var(--g7);display:flex;align-items:center;gap:3px;margin-left:auto;white-space:nowrap"><input type="checkbox" data-ch="non" ${f.non?'checked':''}>含非任务</label>
+    </div></div>`;
+}
+function listItems(selId){
+  const a=filtered();
+  const head=`<div class="lcount"><span>${a.length} 件事${S.f.non?'':'（非任务已隐藏）'}</span>${filtersActive()&&a.length?`<button data-act="clear">清除筛选</button>`:''}</div>`;
+  if(!a.length)return head+`<div class="items"><div class="empty"><b>没有符合条件的事</b>换个筛选；要发新事，${S.v==='A'?'点上方「新的一件事」':'在中间底部输入框直接说'}。<br><button class="btn" data-act="clear">清除筛选</button></div></div>`;
+  return head+`<div class="items">${a.map(t=>`<button class="item ${t.id===selId?'on':''} ${S.flash===t.id?'flash':''}" data-act="sel" data-x="${t.id}">
+     <div class="l1"><span class="id">TASK-${t.id}</span>${isTab()?'':`<span class="gn">${esc(t.g==='dm'?'私聊':gname(t.g))}</span>`}<span>· ${t.by}</span><span class="t">${t.date==='10-10'?'今天 ':t.date+' '}${t.time}</span></div>
+     <div class="l2">${esc(sum80(t.raw))}</div>
+     <div class="l3">${badge(t.status)}<span class="st">${esc(t.stage)}${t.summary&&t.stage!==t.summary?'｜'+esc(t.summary):''}</span>${waitB(t)}</div></button>`).join('')}</div>`;
+}
+
+/* ---------- thread ---------- */
+function threadView(t,opts={}){
+  const tabLock=isTab();
+  const acts=[];
+  if(t.canSwap)acts.push(`<button class="tbtn" data-act="swap">换文件</button>`);
+  if(t.status==='New'||t.status==='InProgress')acts.push(`<button class="tbtn" data-act="cancel">取消任务</button>`);
+  const pendingQ=t.wait&&!S.answered[t.id];
+  return `<section class="detail">
+   <div class="dhead">${opts.back?`<button class="back" data-act="bback">← 返回群动态</button>`:''}${opts.backA?`<button class="back" data-act="aback">← 返回列表</button>`:''}
+    <div class="r1"><h1>TASK-${t.id}</h1>${badge(t.status)}${waitB(t)}<div class="acts">${acts.join('')}</div></div>
+    <div class="meta"><b>${esc(t.g==='dm'?'私聊':gname(t.g))}</b> · ${t.by} 提交 · ${t.date==='10-10'?'今天':'10-'+t.date.slice(3)} ${t.time} SGT · 交给 ${BOT}</div>
+    <dl class="kv"><dt>阶段</dt><dd>${esc(t.stage)}</dd><dt>摘要</dt><dd>${esc(t.summary||'—')}</dd></dl>
+   </div>
+   <div class="tlwrap"><div class="tl">${t.tl.map(m=>tlItem(t,m)).join('')}${relBlock(t)}</div><button class="jump" data-act="jump">↓ 下面有问题卡等你回答</button></div>
+   ${composer('reply',t,pendingQ)}
+  </section>`;
+}
+function relBlock(t){
+  if(!t.rel)return '';
+  const open=S.openRel[t.id];
+  const ids=t.rel.filter(r=>r.id).map(r=>r.id).join('、');
+  return `<button class="fold" data-act="rel" data-x="${t.id}">${open?'▾':'▸'} 关联记录 ${t.rel.length} 条（追问 ${ids}，原来单列为非任务，已折叠进本串）</button>
+   ${open?`<div class="rel">${t.rel.map(r=>`<div class="msg">${avatar(r.who)}<div class="mb"><div class="mh"><b>${r.who}</b><span>${r.time}</span><span class="tag">${r.kind}</span></div><div class="mt">${esc(r.text)}</div></div></div>`).join('')}</div>`:''}`;
+}
+function tlItem(t,m){
+  if(m.k==='me')return `<div class="msg">${avatar(m.who)}<div class="mb"><div class="mh"><b>${m.who}</b><span>${m.time}</span>${m.tag?`<span class="tag">${m.tag}</span>`:'<span class="k">原话</span>'}</div><div class="mt">${esc(m.text)}</div></div></div>`;
+  if(m.k==='logged')return `<div class="sysl ${m.hl?'hl':''}">${esc(m.text)}<span class="t">${m.time}</span></div>`;
+  if(m.k==='stage')return `<div class="sysl">${esc(m.text)}<span class="t">${m.time} · 进度</span></div>`;
+  if(m.k==='sys')return `<div class="sysl hl">${esc(m.text)}<span class="t">${m.time}</span></div>`;
+  const head=(k)=>`<div class="mh"><b>${BOT}</b><span>${m.time}</span><span class="k">${k}</span></div>`;
+  if(m.k==='ack')return `<div class="msg">${avatar(BOT)}<div class="mb">${head(t.status==='Non'?'回复':'受理回执')}<div class="mt">${esc(m.text)}</div></div></div>`;
+  if(m.k==='bot')return `<div class="msg">${avatar(BOT)}<div class="mb">${head(m.kind||'回复')}<div class="mt">${esc(m.text)}</div></div></div>`;
+  if(m.k==='q')return `<div class="msg">${avatar(BOT)}<div class="mb">${head('问题卡')}${qCard(t)}</div></div>`;
+  if(m.k==='res'){const r=t.res;return `<div class="msg">${avatar(BOT)}<div class="mb">${head('结果')}<div class="card res"><div class="ch">结果 <span class="bd ${r.cls}">${r.c}</span></div><div class="mt" style="font-size:13px">${esc(r.d)}</div>
+     <dl class="rk"><dt>写回位置</dt><dd class="mono">${esc(r.path)}</dd><dt>文件核验</dt><dd>${esc(r.hash)}</dd></dl>
+     <div class="warn"><b>注意</b>　任务显示完成，不等于真实数据已核对。</div></div></div></div>`}
+  if(m.k==='fail'){const f=t.fail;return `<div class="msg">${avatar(BOT)}<div class="mb">${head('异常')}<div class="card fail"><div class="ch">没跑成 <span class="bd Failed">✕ 失败</span></div><div class="mt" style="font-size:13px">${esc(f.why)}</div><dl class="rk"><dt>下一步</dt><dd>${esc(f.next)}</dd></dl></div></div></div>`}
+  return '';
+}
+function qCard(t){
+  const ans=S.answered[t.id];const picks=S.picks[t.id]||{};
+  const all=t.q.items.every((_,i)=>picks[i]);
+  if(ans){
+    return `<div class="card q done"><div class="ch">问题卡 · 第 ${t.q.round} 轮 <span class="bd c-pass">✓ 已收到</span><span class="sub">${ans.who} ${ans.time} 在面板答的，群里那张卡也已显示「已收到」</span></div>
+     ${t.q.bg?`<div class="qbg">${esc(t.q.bg)}</div>`:''}${t.q.items.map((q,i)=>{const o=q.o.find(x=>x[0]===ans.p[i]);return `<div class="qi"><div class="qt">${i+1}. ${esc(q.t)}</div><button class="opt on" disabled><span class="dot"></span><span class="ltr">${o[0]}</span>${esc(o[1])}</button></div>`}).join('')}</div>`;
+  }
+  return `<div class="card q"><div class="ch">问题卡 · 第 ${t.q.round} 轮 · ${t.q.items.length} 个问题<span class="sub">群里是同一张卡，谁先答算谁</span></div>
+   ${t.q.bg?`<div class="qbg">${esc(t.q.bg)}</div>`:''}${t.q.items.map((q,i)=>`<div class="qi"><div class="qt">${i+1}. ${esc(q.t)}</div>${q.o.map(o=>`<button class="opt ${picks[i]===o[0]?'on':''}" data-act="pick" data-t="${t.id}" data-i="${i}" data-x="${o[0]}"><span class="dot"></span><span class="ltr">${o[0]}</span>${esc(o[1])}</button>`).join('')}</div>`).join('')}
+   <div class="qf"><button class="btn pri" data-act="answer" data-t="${t.id}" ${all?'':'disabled'}>提交回答</button><span>${all?'将提交：'+t.q.items.map((_,i)=>(i+1)+picks[i]).join(' '):'每题选一个'}</span></div></div>`;
+}
+
+/* ---------- composer ---------- */
+function composer(mode,t,demote){
+  const tab=isTab();
+  let to='';
+  if(mode==='reply'){
+    to=`<span>追问 <b>TASK-${t.id}</b>，记到本串</span>`;
+  }else{
+    let gsel;
+    if(tab)gsel=`<span class="lock">${gname(TAB_GROUP)}</span><span>已锁定，只发本群</span>`;
+    else if(S.v==='B'&&S.bGroup!=='all')gsel=`<span class="lock">${gname(S.bGroup)}</span>`;
+    else gsel=`<select data-ch="draftG"><option value="">请选择群</option>${GROUPS.filter(g=>!g.dm).map(g=>`<option value="${g.id}" ${S.draftG===g.id?'selected':''}>${g.name}${g.bound?'':'（未绑定）'}</option>`).join('')}</select>`;
+    const tg=tab?TAB_GROUP:(S.v==='B'&&S.bGroup!=='all'?S.bGroup:S.draftG);
+    to=`<span><b>发到</b> ${gsel}</span><span><b>交给</b> ${BOT}</span>${S.err?`<span class="err">${S.err}</span>`:''}${tg&&!bound(tg)?`<span class="warnin">这个群还没绑定项目，发出会记成 TASK-n，但暂时不会有受理回执</span>`:''}`;
+  }
+  const ph=mode==='reply'?`追问 TASK-${t.id}…`:'跟幕僚长任务说要做什么，比如「用R比对AE，Spec 用 v1.2」';
+  const canSend=S.draft.trim().length>0;
+  if(mode==='reply')return `<div class="comp"><div class="box"><div class="to">${to}</div><div class="rrow"><textarea data-in="draft" placeholder="${ph}">${esc(S.draft)}</textarea><button class="btn ${demote?'':'pri'}" data-act="send" data-m="reply" ${canSend?'':'disabled'}>发送</button></div></div></div>`;
+  return `<div class="comp"><div class="box"><div class="to">${to}</div>
+   <textarea data-in="draft" placeholder="${ph}">${esc(S.draft)}</textarea>
+   <div class="cf"><div class="chips">${mode==='new'?QUICK.map(q=>`<button class="qc" data-act="quick" data-x="${q}">${q}</button>`).join(''):''}</div><span class="hint">Enter 发送 · Shift+Enter 换行</span>
+   <button class="btn ${demote?'':'pri'}" data-act="send" data-m="${mode}" ${canSend?'':'disabled'}>发送</button></div></div></div>`;
+}
+
+/* ---------- A ---------- */
+function viewA(){
+  const wb=S.wb;
+  const listCls=wb==='narrow'?'full':wb==='mid'?'mid':(isTab()?'narrow':'');
+  const list=`<div class="list ${listCls}">${filterBar()}${listItems(S.compose?null:S.sel)}</div>`;
+  let right;
+  if(S.compose){
+    right=`<section class="detail">${wb==='narrow'?`<div class="dhead" style="padding-bottom:0"><button class="back" data-act="aback">← 返回列表</button></div>`:''}<div class="newpage"><div class="intro"><h2>说一件新事</h2><p>在下面用一句话说要做什么，发出后马上记成一件事（TASK-n），进度、问题、结果都回到这一串里。</p><ul><li>${isTab()?'只发到本群「'+gname(TAB_GROUP)+'」。要发别的群，去左边栏的任务面板。':'先选发到哪个群；群里也会留一条「已记录 TASK-n（来自任务面板）」。'}</li><li>常用说法点一下就填进去，可以再改。</li><li>第一期不填截止时间、不传附件；输入文件按群绑定的项目自动选，受理回执里会写明。</li></ul></div></div>${composer('new')}</section>`;
+  }else{
+    const t=T(S.sel);
+    right=t?threadView(t,{backA:wb==='narrow'}):`<section class="detail"><div class="empty">选一件事查看</div></section>`;
+  }
+  if(wb==='narrow')return S.aPane==='list'&&!S.compose?list:right;
+  return list+right;
+}
+/* ---------- B ---------- */
+function streamEvents(){
+  let a=scoped().filter(t=>t.status!=='Non');
+  if(!isTab()&&S.bGroup!=='all')a=a.filter(t=>t.g===S.bGroup);
+  const ev=[];
+  a.forEach(t=>t.tl.forEach((m,i)=>{if(m.grp)ev.push({t,m,key:t.date+' '+m.time+' '+String(i).padStart(2,'0')})}));
+  ev.sort((x,y)=>x.key<y.key?-1:x.key>y.key?1:0);
+  return ev;
+}
+function streamItem(e){
+  const {t,m}=e;const glab=(!isTab()&&S.bGroup==='all')?`<div class="glabel">${esc(t.g==='dm'?'私聊':gname(t.g))}</div>`:'';
+  if(m.k==='logged')return `<div class="sysl ${m.hl?'hl':''}">${esc(m.text)}<span class="t">${m.time}</span></div>`;
+  if(m.k==='sys'||m.k==='stage')return `<div class="sysl">${esc(m.text)}<span class="t">${m.time}</span></div>`;
+  const chip=`<button class="tchip" data-act="bopen" data-x="${t.id}"><span class="id">TASK-${t.id}</span><span class="x">${esc(sum80(t.raw))}</span>${badge(t.status)}${waitB(t)}<span class="go">打开串 ›</span></button>`;
+  const flash=S.flash===t.id&&m.k==='me'?'flash':'';
+  if(m.k==='me')return glab+`<div class="msg ${flash}">${avatar(m.who)}<div class="mb"><div class="mh"><b>${m.who}</b><span>${e.t.date==='10-10'?'今天':e.t.date} ${m.time}</span></div><div class="mt">${esc(m.text)}</div>${chip}</div></div>`;
+  const kind={ack:'受理回执',q:'问题卡',res:'结果',fail:'异常',bot:'回复'}[m.k]||'';
+  let inner='';
+  if(m.k==='ack'||m.k==='bot')inner=`<div class="mt">${esc(m.text)}</div>`;
+  if(m.k==='q')inner=qCard(t);
+  if(m.k==='res')inner=`<div class="mt">结果：<span class="bd ${t.res.cls}">${t.res.c}</span> ${esc(t.res.d)}</div><div class="mt" style="font-size:12px;color:var(--g7);word-break:break-all">写回 <span class="mono">${esc(t.res.path)}</span> · ${esc(t.res.hash)} · 任务显示完成，不等于真实数据已核对</div>`;
+  if(m.k==='fail')inner=`<div class="mt">没跑成：${esc(t.fail.why)}</div>`;
+  return glab+`<div class="msg">${avatar(BOT)}<div class="mb"><div class="mh"><b>${BOT}</b><span>${e.t.date==='10-10'?'今天':e.t.date} ${m.time}</span><span class="k">${kind}</span></div>${inner}${chip}</div></div>`;
+}
+function groupLabel(g){return g.dm?'私聊':g.name}
+function viewB(){
+  const tab=isTab();const wb=S.wb;const wide=wb==='wide';
+  let groups='';
+  const cnt=g=>TASKS.filter(t=>(g==='all'||t.g===g)&&t.wait&&!S.answered[t.id]).length;
+  if(!tab&&wide&&S.gcol){
+    groups=`<aside class="groups"><h3>群</h3>${[{id:'all',name:'全部群',bound:1}].concat(GROUPS).map(g=>{const n=cnt(g.id);return `<button class="gi ${S.bGroup===g.id?'on':''}" data-act="bgroup" data-x="${g.id}">${esc(groupLabel(g))}${n?`<span class="n">${n} 待答</span>`:(g.bound||g.dm?'':'<span class="ub">未绑定</span>')}</button>`}).join('')}</aside>`;
+  }
+  const nList=filtered().length;
+  let center;
+  if(S.bThread){center=threadView(T(S.bThread),{back:1})}
+  else{
+    const ev=streamEvents();
+    let title;
+    if(tab)title=`<h1>本群任务动态</h1>`;
+    else if(wide&&S.gcol)title=`<h1>${esc(S.bGroup==='all'?'全部群的任务动态':gname(S.bGroup))}</h1>`;
+    else title=`<select class="gsel" data-ch="bGroup" aria-label="群">${[{id:'all',name:'全部群'}].concat(GROUPS).map(g=>`<option value="${g.id}" ${S.bGroup===g.id?'selected':''}>${esc(groupLabel(g))}${g.id!=='all'&&!g.dm&&!g.bound?'（未绑定）':''}</option>`).join('')}</select>`;
+    center=`<section class="stream"><div class="shead">${title}${wide?`<span>只显示和任务有关的消息：发起、受理回执、问题卡、结果/异常。闲聊留在群聊里。</span>`:`<button class="btn lb" data-act="blist">任务列表 ${nList} ›</button>`}</div>
+     <div class="tlwrap"><div class="tl">${ev.length?ev.map(streamItem).join(''):`<div class="empty"><b>这里还没有任务</b>在下方说一件事，发出就记成 TASK-n。</div>`}</div><button class="jump" data-act="jump">↓ 下面有问题卡等你回答</button></div>${composer('new',null,ev.some(e=>e.m.k==='q'&&!S.answered[e.t.id]))}</section>`;
+  }
+  const listInner=`${filterBar(1)}${listItems(S.bThread)}`;
+  let right='';
+  if(wide)right=`<div class="list right ${tab?'narrow':''}"><div style="padding:12px 12px 0;font-size:13px;font-weight:600">${tab?'本群任务':'任务列表'}</div>${listInner}</div>`;
+  else if(S.bList)right=`<div class="drawer ${wb==='narrow'?'full':''}"><div class="dh">${tab?'本群任务':'任务列表'}<button class="tbtn" data-act="blist">关闭</button></div>${listInner}</div>`;
+  return `${groups}${center}${right}`;
+}
+/* ---------- modal ---------- */
+function modal(){
+  const m=S.modal;
+  if(m.k==='cancel')return `<div class="mask"><div class="modal"><h3>取消 TASK-${m.id}？</h3><p>群里任何人都可以取消。取消后这件事停在当前阶段，群里会收到一条取消记录，不能恢复。</p><div class="f"><button class="btn" data-act="mclose">不取消</button><button class="btn danger" data-act="mcancel">确认取消</button></div></div></div>`;
+  if(m.k==='swap')return `<div class="mask"><div class="modal"><h3>换输入文件（TASK-${m.id}）</h3><p>只在开跑前能换。原型里不做文件选择；真实版会列出本群项目下可用的 7z / Spec，选好后重新出受理回执。</p><div class="f"><button class="btn pri" data-act="mclose">知道了</button></div></div></div>`;
+}
+/* ---------- actions ---------- */
+function now(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function toast(s){S.toast=s;render();setTimeout(()=>{S.toast='';render()},1800)}
+function sendNew(){
+  const text=S.draft.trim();if(!text)return;
+  let g=isTab()?TAB_GROUP:(S.v==='B'&&S.bGroup!=='all'?S.bGroup:S.draftG);
+  if(!g){S.err='先选发到哪个群';render();return}
+  const id=NEXT++;const tm=now();
+  const t={id,g,by:'我',date:'10-10',time:tm,status:'New',stage:'等待受理',summary:'刚记录，还没受理',raw:text,canSwap:1,
+    tl:[{k:'me',who:'我',time:tm,text,grp:1},{k:'logged',time:tm,text:`已记录 TASK-${id}（来自任务面板）· 群「${gname(g)}」里也留了一条`,hl:1,grp:1}]};
+  TASKS.unshift(t);S.draft='';S.err='';S.draftG='';S.compose=false;S.flash=id;
+  if(S.v==='A'){S.sel=id;S.aPane='thread'}
+  if(!bound(g)){t.stage='等待绑定项目';t.summary='这个群还没绑定项目，暂时不会有回执';t.canSwap=0;t.tl.push({k:'sys',time:tm,text:'这个群还没绑定项目，暂时不会有受理回执。',grp:1});S.scrollEnd=true;render();return}
+  S.scrollEnd=true;render();
+  setTimeout(()=>{t.status='InProgress';t.stage='准备输入文件';t.summary='已受理，输入文件已选好';t.tl.push({k:'ack',time:now(),text:`已受理。用的是群「${gname(g)}」绑定项目的最新数据包和 Spec v1.2。不对可以在开跑前换文件。`,grp:1});S.flash=null;S.scrollEnd=true;render()},1500);
+}
+function sendReply(){
+  const t=T(S.v==='A'?S.sel:S.bThread);const text=S.draft.trim();if(!t||!text)return;
+  t.tl.push({k:'me',who:'我',time:now(),text,tag:'追问'});S.draft='';S.scrollEnd=true;render();
+  setTimeout(()=>{t.tl.push({k:'bot',kind:'回复',time:now(),text:`收到追问，已记到 TASK-${t.id}，有结论回到本串。`});S.scrollEnd=true;render()},900);
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,x=b.dataset.x;
+  if(a==='v'){S.v=x;S.compose=false;S.bThread=null;S.bList=false;S.draft='';S.err='';if(x==='B')S.scrollEnd=true;else S.scrollTop0=true}
+  else if(a==='e'){S.e=x;S.compose=false;S.bThread=null;S.bList=false;S.draft='';S.err='';S.f.g='all';S.bGroup='all';if(x==='tab'&&T(S.sel).g!==TAB_GROUP)S.sel=41;if(S.v==='B')S.scrollEnd=true;else S.scrollTop0=true}
+  else if(a==='sel'){S.scrollTop0=true;if(S.v==='A'){S.sel=+x;S.compose=false;S.aPane='thread'}else{S.bThread=+x;S.bList=false}S.draft=''}
+  else if(a==='new'){S.compose=true;S.aPane='thread';S.draft='';S.focus=true}
+  else if(a==='aback'){S.aPane='list';S.compose=false}
+  else if(a==='blist'){S.bList=!S.bList}
+  else if(a==='jump'){const c=document.querySelector('.tl .card.q:not(.done)');if(c)c.scrollIntoView({block:'end'});updPill();return}
+  else if(a==='who')S.f.who=x;
+  else if(a==='wait')S.f.wait=!S.f.wait;
+  else if(a==='clear')S.f={g:'all',who:'all',st:'all',date:'all',wait:false,non:false,q:''};
+  else if(a==='pick'){const t=b.dataset.t;S.picks[t]=S.picks[t]||{};S.picks[t][b.dataset.i]=x}
+  else if(a==='answer'){const id=+b.dataset.t;const t=T(id);const p=t.q.items.map((_,i)=>S.picks[id][i]);const tm=now();S.answered[id]={who:'我',time:tm,p};t.wait=false;t.stage='比对 AE';t.summary='已收到回答，按 Spec v1.2、原样比对开跑';
+    t.tl.push({k:'sys',time:tm,text:'已收到回答 '+p.map((v,i)=>(i+1)+v).join(' ')+' · 群里的问题卡同步显示「已收到」'});t.tl.push({k:'stage',time:tm,text:'阶段：比对 AE'});S.scrollEnd=true}
+  else if(a==='quick'){S.draft=S.draft.trim()?S.draft.trim()+'，'+x:x;S.focus=true}
+  else if(a==='send'){b.dataset.m==='new'?sendNew():sendReply();return}
+  else if(a==='rel')S.openRel[x]=!S.openRel[x];
+  else if(a==='cancel')S.modal={k:'cancel',id:S.v==='A'?S.sel:S.bThread};
+  else if(a==='swap')S.modal={k:'swap',id:S.v==='A'?S.sel:S.bThread};
+  else if(a==='mclose')S.modal=null;
+  else if(a==='mcancel'){const t=T(S.modal.id);t.status='Cancelled';t.stage='已取消';t.summary='我 '+now()+' 取消';t.wait=false;t.canSwap=0;t.tl.push({k:'sys',time:now(),text:'我取消了这件事 · 群里已留记录'});S.modal=null}
+  else if(a==='bgroup'){S.bGroup=x;S.bThread=null;S.scrollEnd=true}
+  else if(a==='bopen'){S.bThread=+x;S.scrollTop0=true}
+  else if(a==='bback'){S.bThread=null;S.scrollEnd=true}
+  render();
+});
+document.addEventListener('input',e=>{
+  const k=e.target.dataset.in;if(!k)return;
+  if(k==='draft'){S.draft=e.target.value;const btn=document.querySelector('[data-act=send]');if(btn)btn.disabled=!S.draft.trim();if(S.err){S.err=''}}
+  if(k==='q'){S.f.q=e.target.value;const pos=e.target.selectionStart;render();const i=document.querySelector('[data-in=q]');i.focus();i.setSelectionRange(pos,pos)}
+});
+document.addEventListener('change',e=>{
+  const k=e.target.dataset.ch;if(!k)return;
+  if(k==='non')S.f.non=e.target.checked;else if(k==='bGroup'){S.bGroup=e.target.value;S.scrollEnd=true}else if(k==='draftG'){S.draftG=e.target.value;S.err=''}else S.f[k]=e.target.value;
+  render();
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.dataset&&e.target.dataset.in==='draft'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();const m=document.querySelector('[data-act=send]');if(m)m.dataset.m==='new'?sendNew():sendReply()}
+});
+(function(){const h=new URLSearchParams(location.hash.slice(1));if(h.get('v'))S.v=h.get('v');if(h.get('e'))S.e=h.get('e');if(h.get('sel'))S.sel=+h.get('sel');if(S.v==='B')S.scrollEnd=true;else S.scrollTop0=true})();
+render();
+</script>
+</body>
+</html>

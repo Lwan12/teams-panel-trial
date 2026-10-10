@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>任务面板（试用）· 配置</title>
+<script src="https://res.cdn.office.net/teams-js/2.58.0/js/MicrosoftTeams.min.js"
+        integrity="sha384-sMo/EOqQPa1OCup2/VBRum7oFeOS22kvs8WGDc45xK53tUVZzFR5WwFYDUYN1LO4"
+        crossorigin="anonymous"></script>
+<style>
+  body { margin:0; padding:24px; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:#242424; }
+  h1 { font-size:18px; margin:0 0 8px; }
+  p { color:#616161; font-size:14px; line-height:1.7; }
+</style>
+</head>
+<body>
+  <h1>添加「任务面板（试用）」标签页</h1>
+  <p>无需任何设置，直接点「保存」即可。<br>该标签页是纯前端演示页，不连接后端。</p>
+  <p id="status" style="font-size:12px"></p>
+<script>
+  (function () {
+    var status = document.getElementById('status');
+    if (!(window.microsoftTeams && microsoftTeams.app)) { status.textContent = '未检测到 Teams SDK'; return; }
+    // index.html 与 config.html 同目录，用当前地址推出内容页地址，换主机不用改代码
+    var base = window.location.href.replace(/[^\/?#]*([?#].*)?$/, '');
+    var contentUrl = base + 'index.html';
+    microsoftTeams.app.initialize().then(function () {
+      microsoftTeams.pages.config.registerOnSaveHandler(function (saveEvent) {
+        microsoftTeams.pages.config.setConfig({
+          entityId: 'task-panel-trial',
+          suggestedDisplayName: '任务面板',
+          contentUrl: contentUrl,
+          websiteUrl: contentUrl
+        }).then(function () { saveEvent.notifySuccess(); })
+          .catch(function (e) { saveEvent.notifyFailure(String(e)); });
+      });
+      microsoftTeams.pages.config.setValidityState(true);
+      microsoftTeams.app.notifySuccess();
+      status.textContent = '已就绪，可点击保存。';
+    }).catch(function (e) { status.textContent = '初始化失败：' + e; });
+  })();
+</script>
+</body>
+</html>
